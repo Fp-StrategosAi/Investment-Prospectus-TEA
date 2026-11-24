@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Strategos · Painel de Educação Municipal e Simulador Fundeb</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Carlito:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#F8F5EE;--surface:#FCFBF6;--ink:#0F1A2C;--ink2:#4a5263;--muted:#7a8091;--line:#e4dfd2;
+  --navy:#0F1A2C;--gold:#C9A861;--gold2:#a8873f;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948;
+  --good:#1f7a4d;--warn:#9a5b00;--bad:#b3261e;--chip:#efeadb;
+}
+@media (prefers-color-scheme:dark){
+  :root{color-scheme:dark;--bg:#0b111c;--surface:#151d2c;--ink:#f0efec;--ink2:#c3c2b7;--muted:#8d93a3;--line:#2a3447;--chip:#202b3f;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#0ca30c;--s7:#9085e9;--s8:#e66767;
+  --good:#52c48a;--warn:#e0a24a;--bad:#ff8a80;--gold2:#C9A861}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Carlito,Calibri,system-ui,sans-serif;font-size:16px;line-height:1.45}
+h1,h2,h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;margin:0}
+header.top{background:var(--navy);color:#F8F5EE;padding:18px 28px 0;border-bottom:3px solid var(--gold)}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.brand .wm{letter-spacing:.28em;font-size:13px;color:var(--gold);font-weight:700}
+.brand h1{font-size:30px;color:#F8F5EE}
+.brand .sub{font-style:italic;font-family:'Cormorant Garamond',serif;color:#cfc6ad;font-size:17px}
+nav.tabs{display:flex;gap:4px;margin-top:14px;flex-wrap:wrap}
+nav.tabs button{background:transparent;border:0;color:#cfc6ad;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;letter-spacing:.02em}
+nav.tabs button[aria-selected=true]{color:#fff;border-bottom-color:var(--gold)}
+nav.tabs button:hover{color:#fff}
+main{max-width:1280px;margin:0 auto;padding:22px 24px 60px}
+section.tab{display:none}section.tab.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.card h2{font-size:22px;margin-bottom:2px}
+.card .hint{color:var(--ink2);font-size:14px;margin:0 0 10px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:8px;padding:12px 14px}
+.kpi .l{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.kpi .v{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1.1}
+.kpi .n{font-size:12.5px;color:var(--muted)}
+.two{grid-template-columns:1fr 1fr}
+@media(max-width:980px){.two{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:5px 11px;border-radius:999px;cursor:pointer;font:inherit;font-size:14px;display:inline-flex;gap:6px;align-items:center}
+.chip[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.btn{background:var(--navy);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+.btn.gold{background:var(--gold);color:#0F1A2C}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:4px 9px;font-size:13px}
+select,input[type=text],input[type=number],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;max-width:100%}
+textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+label.f{display:flex;flex-direction:column;font-size:13px;color:var(--ink2);gap:3px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--ink2);margin:6px 0 8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+svg text{font-family:Carlito,Calibri,sans-serif;fill:var(--ink2);font-size:12.5px}
+svg text.lab{fill:var(--ink)}svg .grid{stroke:var(--line);stroke-width:1}
+#tip{position:fixed;pointer-events:none;background:var(--navy);color:#fff;padding:8px 10px;border-radius:6px;font-size:13px;z-index:50;max-width:280px;display:none;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip b{color:var(--gold)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:var(--navy);color:#fff;text-align:left;padding:7px 9px;font-weight:700;white-space:nowrap}
+th.s{cursor:pointer}
+td{padding:6px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--chip) 45%,transparent)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.note{background:color-mix(in srgb,var(--chip) 60%,transparent);border-left:3px solid var(--gold);padding:9px 12px;font-size:14px;color:var(--ink2);border-radius:0 6px 6px 0;margin:10px 0}
+.warn{border-left-color:var(--warn)}.bad{border-left-color:var(--bad)}
+.quote{background:var(--navy);color:#F8F5EE;border-left:5px solid var(--gold);padding:14px 18px;border-radius:0 8px 8px 0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px}
+.quote b{color:var(--gold);font-style:italic}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;font-weight:700}
+.pill.cap{background:#6250d633;color:var(--ink)}.pill.cus{background:#1baf7a33;color:var(--ink)}.pill.no{background:#e3494833;color:var(--ink)}
+.steps{counter-reset:s;display:grid;gap:10px}
+.step{display:grid;grid-template-columns:44px 1fr auto;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.step .num{width:36px;height:36px;border-radius:8px;background:var(--navy);color:var(--gold);display:grid;place-items:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600}
+.step h3{font-size:19px}
+.step ul{margin:4px 0 0 18px;padding:0;color:var(--ink2);font-size:14.5px}
+.step .meta{font-size:12.5px;color:var(--muted);margin-top:4px}
+.step.done{opacity:.6}
+.big{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600}
+.simgrid{grid-template-columns:340px 1fr}
+@media(max-width:980px){.simgrid{grid-template-columns:1fr}}
+.bar{height:10px;background:var(--s1);border-radius:3px;min-width:2px}
+details{margin:6px 0}summary{cursor:pointer;font-weight:700}
+.small{font-size:13px;color:var(--ink2)}
+th.sticky,td.sticky{position:sticky;left:0;z-index:2;background:var(--surface)}th.sticky{background:var(--navy)}
+tr.sub td{font-weight:700;background:color-mix(in srgb,var(--chip) 80%,transparent)}tr.tot td{font-weight:700;border-top:2px solid var(--navy)}
+.band-ei{background:color-mix(in srgb,var(--s1) 8%,transparent)}.band-ai{background:color-mix(in srgb,var(--s3) 8%,transparent)}.band-af{background:color-mix(in srgb,var(--s4) 8%,transparent)}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:18px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="wm">STRATEGOS · AI CONSULTING</span><h1>Painel de Educação Municipal</h1><span class="sub">matrículas, rede e simulador Fundeb para educação especial inclusiva</span></div>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+</header>
+<main>
+
+<!-- ============ PAINEL ============ -->
+<section class="tab" id="t-painel">
+  <div class="card">
+    <h2>Municípios no painel</h2>
+    <p class="hint">Selecione os municípios para comparar (15 cadastrados: planilha original e CODESSUL). Novas cidades entram pela aba <b>Dados</b> (colar a planilha no mesmo formato) e aparecem aqui automaticamente.</p>
+    <div class="row">
+      <div class="chips" id="cityChips"></div>
+      <button class="btn ghost sm" id="allBtn">Todas</button>
+      <button class="btn ghost sm" id="noneBtn">Nenhuma</button>
+      <label class="f" style="margin-left:auto;flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="espSum" checked> Somar educação especial ao total de matrículas</label>
+    </div>
+  </div>
+
+  <div class="grid kpis" id="kpis"></div>
+  <div class="card" style="margin-top:16px"><h2>Leituras automáticas</h2><ul id="insights" style="margin:6px 0 0 18px;padding:0;color:var(--ink2)"></ul></div>
+
+  <div class="card">
+    <div class="row"><div><h2>Matrículas por etapa</h2><p class="hint" style="margin:0">Composição da rede de cada município</p></div>
+      <label class="f" style="margin-left:auto">Escala<select id="stackMode"><option value="abs">Absoluto (alunos)</option><option value="pct">Participação (%)</option></select></label></div>
+    <div class="legend" id="stackLegend"></div>
+    <div id="stackChart"></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <div class="row"><div><h2>Ranking por indicador</h2></div>
+        <label class="f" style="margin-left:auto">Indicador<select id="rankMetric"></select></label></div>
+      <div id="rankChart"></div>
+    </div>
+    <div class="card">
+      <div class="row"><div><h2>Trajetória do 1º ao 9º ano</h2><p class="hint" style="margin:0">Índice: matrículas do 1º ano = 100</p></div>
+        <label class="f" style="margin-left:auto">Visão<select id="lineMode"><option value="idx">Índice (1º ano = 100)</option><option value="abs">Matrículas absolutas</option></select></label></div>
+      <div class="legend" id="lineLegend"></div>
+      <div id="lineChart"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Tabela de indicadores</h2>
+    <p class="hint">Clique no cabeçalho para ordenar. É também a visão em tabela dos gráficos acima.</p>
+    <div class="scroll"><table id="mainTable"></table></div>
+  </div>
+</section>
+
+<!-- ============ PROFESSORES ============ -->
+<section class="tab" id="t-professores">
+  <div class="card">
+    <h2>Municípios considerados</h2>
+    <p class="hint">A seleção é a mesma do Painel. Anos iniciais e finais usam o total real de professores informado; creche, pré-escola e AEE são estimados pelas premissas abaixo.</p>
+    <div class="row"><div class="chips" id="cityChips2"></div><button class="btn ghost sm" id="allBtn2">Todas</button><button class="btn ghost sm" id="noneBtn2">Nenhuma</button></div>
+  </div>
+  <div class="grid kpis" id="pKpis"></div>
+  <div id="pObs"></div>
+  <div class="card" style="margin-top:16px">
+    <h2>Professores por etapa</h2>
+    <p class="hint">Educação infantil e AEE estimados; anos iniciais e finais informados.</p>
+    <div class="legend" id="pLegend"></div>
+    <div id="pStack"></div>
+  </div>
+  <div class="card">
+    <div class="row"><div><h2>Professores por série (estimativa)</h2><p class="hint" style="margin:0">Role para o lado para ver todas as colunas. Fundo azul: educação infantil, verde: anos iniciais, amarelo: anos finais.</p></div>
+      <button class="btn gold sm" id="pCopy" style="margin-left:auto">Copiar tabela (colar no Excel)</button></div>
+    <span class="small" id="pCopyMsg"></span>
+    <div class="scroll"><table id="pTable"></table></div>
+  </div>
+  <div class="card">
+    <h2>Premissas da estimativa</h2>
+    <p class="hint">Valores editáveis, salvos neste navegador. São premissas de planejamento, não dados oficiais.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))" id="pPrem"></div>
+    <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="pReset">Restaurar padrões</button><span class="small" id="pWarn"></span></div>
+    <div class="note"><b>Limites:</b> contam professores regentes (sem auxiliares de sala, cuidadores nem profissionais de apoio escolar); tempo integral e hora-atividade não entram; nos anos iniciais e finais a divisão por série distribui o total real de professores na proporção das matrículas, e nos anos finais o professor atua em várias séries. Para números reais, use o Censo Escolar por docente e turma.</div>
+  </div>
+</section>
+
+<!-- ============ DADOS ============ -->
+<section class="tab" id="t-dados">
+  <div class="card">
+    <h2>1 · Colar planilha (várias cidades de uma vez)</h2>
+    <p class="hint">Cole o bloco copiado do Excel/Sheets exatamente no formato que você enviou (cidades lado a lado, rótulo + valor). Também aceita CSV (uma cidade por linha) e JSON. O leitor identifica sozinho as cidades, etapas, professores e escolas.</p>
+    <textarea id="pasteBox" rows="9" placeholder="Cole aqui a tabela copiada da planilha..."></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" id="parseBtn">Ler e pré-visualizar</button>
+      <button class="btn gold" id="commitBtn" disabled>Adicionar / atualizar na base</button>
+      <button class="btn ghost" id="csvModelBtn">Ver modelo CSV</button>
+    </div>
+    <div id="preview" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Cadastro individual</h2>
+    <p class="hint">Preencha ou edite uma cidade (use “Editar” na lista abaixo para carregar).</p>
+    <div class="row" id="formRow"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="saveForm">Salvar município</button><button class="btn ghost" id="clearForm">Limpar</button><span class="small" id="formMsg"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Base atual</h2>
+    <div class="scroll"><table id="baseTable"></table></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost sm" id="resetBtn">Restaurar as 7 cidades originais</button>
+    </div>
+    <div class="note">Os dados ficam salvos <b>neste navegador</b>. Para guardar de forma permanente ou levar para outro computador, use o JSON abaixo (copiar e colar depois).</div>
+  </div>
+
+  <div class="card">
+    <h2>4 · Exportar / importar JSON</h2>
+    <textarea id="jsonBox" rows="6"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" id="jsonCopy">Gerar e copiar JSON da base</button>
+      <button class="btn ghost" id="jsonLoad">Carregar JSON colado (substitui a base)</button>
+      <span class="small" id="jsonMsg"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIMULADOR ============ -->
+<section class="tab" id="t-simulador">
+  <div class="quote">O Fundeb não tem “saldo livre” por padrão: <b>70%</b> vão para remuneração; a margem para materiais é a parcela de <b>MDE (30%)</b> mais o <b>VAAR</b>, depois dos compromissos já assumidos.</div>
+  <div class="grid simgrid" style="margin-top:16px">
+    <div>
+      <div class="card">
+        <h2>Premissas</h2>
+        <p class="hint">Valores ilustrativos e editáveis. Substitua pelos da sua rede (FNDE/Tesouro).</p>
+        <label class="f">Município<select id="simCity"></select></label>
+        <div style="height:8px"></div>
+        <label class="f">Cenário<select id="simScen">
+          <option value="cons">Conservador (só VAAF)</option>
+          <option value="base" selected>Base (VAAT + VAAR moderados)</option>
+          <option value="otim">Otimista (VAAT + VAAR altos)</option>
+          <option value="custom">Personalizado</option></select></label>
+        <div style="height:8px"></div>
+        <label class="f">VAAF por aluno ponderado (R$/ano)<input type="number" id="pVaaf" step="0.01"></label>
+        <label class="f" style="margin-top:6px">Complementação VAAT por aluno ponderado (R$/ano)<input type="number" id="pVaat" step="0.01"></label>
+        <label class="f" style="margin-top:6px">VAAR por aluno ponderado (R$/ano)<input type="number" id="pVaar" step="0.01"></label>
+        <label class="f" style="margin-top:6px">% da margem MDE já comprometida (transporte, manutenção, outros)<input type="number" id="pComp" min="0" max="100"></label>
+        <label class="f" style="margin-top:6px">% mínimo da complementação VAAT para educação infantil<input type="number" id="pEi" min="0" max="100"></label>
+        <details><summary>Fatores de ponderação (base)</summary>
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:6px" id="pFat"></div>
+          <p class="small">Fatores-base de referência, sem os multiplicadores de NSE e DRec. Confirme a tabela do ano na Res. CIF nº 16/2025.</p></details>
+        <div class="note warn" id="capWarn" style="display:none"></div>
+      </div>
+    </div>
+    <div>
+      <div class="grid kpis" id="simKpis"></div>
+      <div class="card" style="margin-top:16px">
+        <h2>Como a receita se distribui</h2>
+        <div id="budgetBar"></div>
+        <div class="legend" id="budgetLegend"></div>
+        <div class="small" id="minLines"></div>
+      </div>
+      <div class="card">
+        <h2>Kit de educação especial inclusiva</h2>
+        <p class="hint">Quantidades derivadas das matrículas de educação especial e do número de escolas. Preços são <b>estimativas ilustrativas</b>: substitua por pesquisa de preços (Lei 14.133, art. 23).</p>
+        <div class="scroll"><table id="kitTable"></table></div>
+        <div id="kitSummary" class="note"></div>
+      </div>
+      <div class="card">
+        <h2>Memória de cálculo</h2>
+        <div class="small" id="memo"></div>
+        <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="copySim">Copiar resumo da simulação</button><span class="small" id="copyMsg"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTRATAÇÃO ============ -->
+<section class="tab" id="t-contratacao">
+  <div class="card">
+    <h2>Passo a passo: do Fundeb ao material na escola</h2>
+    <p class="hint">Marque os passos concluídos (fica salvo neste navegador). Ajuste ao regulamento do município e valide com a Procuradoria, o Controle Interno e o CACS-Fundeb.</p>
+    <div class="steps" id="steps"></div>
+  </div>
+  <div class="card">
+    <h2>Rubricas: onde cada item entra</h2>
+    <div class="scroll"><table id="rubTable"></table></div>
+    <div class="note warn"><b>Atenção (art. 71 da LDB):</b> não são MDE e não podem sair do Fundeb alimentação escolar, terapias clínicas e assistência à saúde ou social. A educação especial inclusiva exige trabalho intersetorial, mas cada despesa precisa ser paga pela fonte certa.</div>
+  </div>
+  <div class="card">
+    <h2>Fontes de recurso (controle da despesa)</h2>
+    <div class="scroll"><table id="fonteTable"></table></div>
+    <div class="note">Códigos conforme a estrutura padronizada pela STN. Confirme o plano de fontes adotado pelo seu tribunal de contas e pelo sistema contábil do município.</div>
+  </div>
+</section>
+
+<!-- ============ NORMAS ============ -->
+<section class="tab" id="t-normas">
+  <div class="card">
+    <h2>Decreto nº 12.773/2025 e a política de educação especial inclusiva</h2>
+    <p class="hint">O Decreto 12.773, de 8/12/2025, altera o Decreto 12.686/2025. O quadro mostra o que mais pesa para planejar compras e contratações.</p>
+    <div class="scroll"><table id="normTable"></table></div>
+  </div>
+  <div class="card">
+    <h2>Regras do Fundeb que limitam a simulação</h2>
+    <ul id="fundebRules" style="margin:4px 0 0 18px;color:var(--ink2)"></ul>
+  </div>
+  <div class="card">
+    <h2>Links oficiais</h2>
+    <ul id="links" style="margin:4px 0 0 18px"></ul>
+    <div class="note bad"><b>Limites desta ferramenta:</b> material de apoio ao planejamento, não é parecer jurídico nem contábil. A simulação usa premissas editáveis; os valores reais vêm das portarias do FNDE/MEC e do extrato bancário da conta do Fundeb.</div>
+  </div>
+</section>
+</main>
+<div id="tip"></div>
+<footer>© Strategos AI Consulting · Painel de Educação Municipal · dados informados pelo usuário; cálculos e premissas editáveis</footer>
+
+<script>
+/*PURE-START*/
+const SEED=[
+ {nome:"Aracati",uf:"CE",grupo:"Planilha original",creche:1402,pre:1670,ai:[830, 800, 843, 881, 810],af:[813, 698, 758, 959],eja:270,esp:1400,escolas:51,profAI:259,profAF:215},
+ {nome:"Jardim",uf:"CE",grupo:"Planilha original",creche:583,pre:786,ai:[326, 341, 350, 385, 396],af:[350, 326, 429, 435],eja:36,esp:319,escolas:25,profAI:111,profAF:133},
+ {nome:"Juazeiro",uf:"",grupo:"Planilha original",creche:3119,pre:4701,ai:[2369, 2400, 2560, 2715, 2749],af:[2916, 3060, 3197, 3173],eja:3404,esp:3345,escolas:95,profAI:570,profAF:664},
+ {nome:"Barro",uf:"CE",grupo:"Planilha original",creche:299,pre:386,ai:[206, 199, 215, 197, 202],af:[258, 260, 256, 224],eja:155,esp:156,escolas:15,profAI:81,profAF:100},
+ {nome:"São Luís do Curu",uf:"CE",grupo:"Planilha original",creche:223,pre:211,ai:[111, 127, 128, 136, 148],af:[135, 132, 153, 120],eja:567,esp:219,escolas:10,profAI:43,profAF:47},
+ {nome:"Canindé",uf:"CE",grupo:"Planilha original",creche:2185,pre:1837,ai:[917, 935, 866, 1017, 1014],af:[925, 917, 951, 1066],eja:1216,esp:1516,escolas:72,profAI:202,profAF:213},
+ {nome:"Cajazeiras",uf:"PB",grupo:"Planilha original",creche:1221,pre:1119,ai:[582, 593, 555, 635, 581],af:[608, 718, 801, 712],eja:1575,esp:776,escolas:37,profAI:114,profAF:154},
+ {nome:"Mombaça",uf:"CE",grupo:"Planilha original",creche:728,pre:999,ai:[512, 507, 464, 521, 491],af:[465, 398, 456, 484],eja:329,esp:477,escolas:40,profAI:109,profAF:188},
+ {nome:"Solonópole",uf:"CE",grupo:"CODESSUL",creche:404,pre:373,ai:[181, 202, 192, 216, 163],af:[181, 173, 205, 204],eja:314,esp:255,escolas:14,profAI:67,profAF:52},
+ {nome:"Senador Pompeu",uf:"CE",grupo:"CODESSUL",creche:345,pre:432,ai:[248, 218, 238, 248, 262],af:[205, 248, 212, 208],eja:430,esp:312,escolas:19,profAI:57,profAF:76},
+ {nome:"Piquet Carneiro",uf:"CE",grupo:"CODESSUL",creche:312,pre:294,ai:[168, 152, 154, 182, 162],af:[164, 147, 175, 152],eja:501,esp:272,escolas:11,profAI:49,profAF:56},
+ {nome:"Pedra Branca",uf:"CE",grupo:"CODESSUL",creche:795,pre:780,ai:[400, 449, 387, 370, 435],af:[409, 461, 511, 450],eja:1112,esp:318,escolas:38,profAI:109,profAF:207},
+ {nome:"Milhã",uf:"CE",grupo:"CODESSUL",creche:439,pre:331,ai:[169, 164, 151, 167, 151],af:[146, 148, 167, 146],eja:567,esp:219,escolas:7,profAI:60,profAF:44,obs:"EJA (567) e educação especial (219) idênticas às de São Luís do Curu; confirmar com a fonte."},
+ {nome:"Deputado Irapuâ Pinheiro",uf:"CE",grupo:"CODESSUL",creche:385,pre:189,ai:[118, 102, 89, 88, 86],af:[77, 95, 120, 120],eja:568,esp:106,escolas:6,profAI:38,profAF:49},
+ {nome:"Acopiara",uf:"CE",grupo:"CODESSUL",creche:598,pre:897,ai:[491, 442, 448, 515, 518],af:[448, 488, 545, 509],eja:2436,esp:675,escolas:34,profAI:151,profAF:169}
+];
+const sum=a=>a.reduce((x,y)=>x+(+y||0),0);
+function norm(s){return (s==null?'':String(s)).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();}
+function num(s){if(s==null)return null;const t=String(s).trim().replace(/\./g,'').replace(',','.');if(!/^-?\d+(\.\d+)?$/.test(t))return null;return parseFloat(t);}
+function titleCase(s){const small=['de','da','do','dos','das','e'];return s.toLowerCase().split(/\s+/).map((w,i)=>(i>0&&small.includes(w))?w:w.charAt(0).toUpperCase()+w.slice(1)).join(' ');}
+function slug(c){return norm(c.nome).replace(/[^a-z0-9]+/g,'-')+'-'+norm(c.uf||'xx');}
+function emptyCity(){return {nome:'',uf:'',grupo:'',obs:'',creche:0,pre:0,ai:[0,0,0,0,0],af:[0,0,0,0],eja:0,esp:0,escolas:0,profAI:0,profAF:0};}
+function missingFields(c){const m=[];if(!c.creche&&c.creche!==0)m.push('creche');['creche','pre','eja','esp','escolas','profAI','profAF'].forEach(k=>{if(c[k]==null)m.push(k)});c.ai.forEach((v,i)=>{if(v==null)m.push((i+1)+'º ano')});c.af.forEach((v,i)=>{if(v==null)m.push((i+6)+'º ano')});return m;}
+
+function parseWide(text){
+  const rows=text.replace(/\r/g,'').split('\n').map(l=>l.split('\t'));
+  const hi=rows.findIndex(r=>r.some(c=>c.trim()));
+  if(hi<0)return {cities:[],msg:'Nada para ler.'};
+  const head=rows[hi];const cols=[];
+  head.forEach((c,j)=>{if(c.trim())cols.push({j,raw:c.trim()});});
+  if(!cols.length)return {cities:[],msg:'Cabeçalho com nomes de cidades não encontrado.'};
+  const cities=cols.map(c=>{let nome=c.raw,uf='';const m=nome.match(/^(.*?)\s*[\/\-]\s*([A-Za-z]{2})$/);if(m){nome=m[1];uf=m[2].toUpperCase();}
+    const o=emptyCity();o.nome=titleCase(nome);o.uf=uf;o.creche=o.pre=o.eja=o.esp=o.escolas=o.profAI=o.profAF=null;o.ai=[null,null,null,null,null];o.af=[null,null,null,null];return o;});
+  let block='mat',pstate=null;
+  for(const r of rows.slice(hi+1)){
+    const joined=norm(r.join(' '));
+    if(joined.includes('professores')&&joined.includes('escolas')){block='prof';pstate=null;continue;}
+    if(block==='mat'){
+      cols.forEach((c,k)=>{const lab=norm(r[c.j]);const v=num(r[c.j+1]);if(!lab||v==null)return;const o=cities[k];let m;
+        if(/^creche/.test(lab))o.creche=v;
+        else if(/^pre/.test(lab))o.pre=v;
+        else if((m=lab.match(/matriculas?\s*(\d)/))){const n=+m[1];if(n>=1&&n<=5)o.ai[n-1]=v;else if(n>=6&&n<=9)o.af[n-6]=v;}
+        else if(/^(ensino\s*)?eja/.test(lab))o.eja=v;
+        else if(/educacao especial/.test(lab))o.esp=v;});
+    }else{
+      const lab0=norm(r[cols[0].j]);
+      if(/^anos iniciais/.test(lab0)){cols.forEach((c,k)=>{const v=num(r[c.j+1]);if(v!=null)cities[k].escolas=v;});pstate='AI';}
+      else if(/^anos finais/.test(lab0)){pstate='AF';}
+      else if(pstate){
+        let any=false;cols.forEach((c,k)=>{const v=num(r[c.j]);if(v!=null){any=true;if(pstate==='AI')cities[k].profAI=v;else cities[k].profAF=v;}});
+        if(any&&pstate==='AF')pstate=null;else if(any)pstate=null;
+      }
+    }
+  }
+  return {cities,msg:''};
+}
+function parseCSV(text){
+  const lines=text.replace(/\r/g,'').split('\n').filter(l=>l.trim());if(lines.length<2)return {cities:[],msg:'CSV sem linhas de dados.'};
+  const sep=lines[0].includes(';')?';':',';const H=lines[0].split(sep).map(norm);const out=[];
+  const idx=k=>H.indexOf(k);
+  for(const l of lines.slice(1)){const p=l.split(sep);const g=k=>{const i=idx(k);return i<0?null:num(p[i]);};
+    const o=emptyCity();o.nome=(p[idx('nome')]||'').trim();o.uf=(p[idx('uf')]||'').trim().toUpperCase();if(!o.nome)continue;
+    o.creche=g('creche');o.pre=g('pre');o.eja=g('eja');o.esp=g('esp');o.escolas=g('escolas');o.profAI=g('profai');o.profAF=g('profaf');
+    o.ai=[1,2,3,4,5].map(n=>g('ano'+n));o.af=[6,7,8,9].map(n=>g('ano'+n));out.push(o);}
+  return {cities:out,msg:''};
+}
+function parseAny(text){
+  const t=text.trim();if(!t)return {cities:[],msg:'Cole algo primeiro.'};
+  if(t[0]==='['||t[0]==='{'){try{let j=JSON.parse(t);if(!Array.isArray(j))j=j.cities||[];return {cities:j,msg:''};}catch(e){return {cities:[],msg:'JSON inválido.'};}}
+  if(t.includes('\t'))return parseWide(text);
+  if(/nome/i.test(t.split('\n')[0])&&/[,;]/.test(t.split('\n')[0]))return parseCSV(text);
+  return {cities:[],msg:'Formato não reconhecido. Copie direto do Excel/Sheets (colunas separadas por tabulação), ou use o modelo CSV.'};
+}
+const DEF_F={creche:1.25,pre:1.15,ai:1.00,af:1.10,eja:0.80,esp:1.40};
+const SCEN={cons:{vaat:0,vaar:0},base:{vaat:1500,vaar:150},otim:{vaat:3000,vaar:300}};
+const REF={vaafMin:5962.79,vaatMin:10194.38};
+const DEF_ITEMS=[
+ {id:'mat',nome:'Material didático-pedagógico acessível (ampliado, tátil, Braille, jogos adaptados)',base:'aluno',cob:100,preco:180,tipo:'custeio',nat:'3.3.90.30 ou 3.3.90.32',lei:'LDB art. 70, VIII; Decreto 12.686 art. 19, VII'},
+ {id:'ta',nome:'Tecnologia assistiva de baixo custo (pranchas de comunicação, adaptadores de escrita, teclado e mouse adaptados)',base:'aluno',cob:50,preco:320,tipo:'custeio',nat:'3.3.90.30',lei:'Decreto art. 3º, V e art. 19, VIII'},
+ {id:'form',nome:'Formação continuada: AEE (360 h) e apoio escolar (180 h), um profissional a cada 20 alunos',base:'aluno',cob:5,preco:2500,tipo:'custeio',nat:'3.3.90.39',lei:'LDB art. 70, I; Decreto arts. 13 e 15'},
+ {id:'kit',nome:'Kit sensorial e de estimulação (TEA e deficiência múltipla), por escola atendida',base:'escola',cob:60,preco:4500,tipo:'capital',nat:'4.4.90.52',lei:'LDB art. 70, II e V'},
+ {id:'disp',nome:'Dispositivos digitais com software de comunicação alternativa (tablet e acessórios)',base:'aluno',cob:15,preco:2400,tipo:'capital',nat:'4.4.90.52',lei:'Decreto art. 12, §4º (parecer pedagógico)'},
+ {id:'srm',nome:'Sala de recursos multifuncional: mobiliário e equipamentos, por sala',base:'escola',cob:35,preco:32000,tipo:'capital',nat:'4.4.90.52',lei:'LDB art. 70, II e V'}
+];
+function calc(c,somaEsp){
+  const ei=c.creche+c.pre,ai=sum(c.ai),af=sum(c.af),base=ei+ai+af+c.eja,total=base+(somaEsp?c.esp:0),prof=c.profAI+c.profAF;
+  return {ei,ai,af,base,total,prof,
+    aluProfAI:c.profAI?ai/c.profAI:null,aluProfAF:c.profAF?af/c.profAF:null,aluProf:prof?(ai+af)/prof:null,
+    aluEscola:c.escolas?total/c.escolas:null,pctEsp:total?c.esp/total*100:null,pctEI:total?ei/total*100:null,pctEJA:total?c.eja/total*100:null,
+    escProf:c.escolas?prof/c.escolas:null};
+}
+function simulate(c,sim){
+  const f=sim.f,ai=sum(c.ai),af=sum(c.af);
+  const pond=c.creche*f.creche+c.pre*f.pre+ai*f.ai+af*f.af+c.eja*f.eja+c.esp*f.esp;
+  const vaaf=pond*sim.vaaf,vaat=pond*sim.vaat,vaar=pond*sim.vaar,base=vaaf+vaat,rem70=base*0.7,margem=base*0.3+vaar,comp=margem*sim.comp/100,disp=margem-comp;
+  const items=sim.items.map(it=>{const bc=it.base==='escola'?c.escolas:c.esp;const qty=Math.round(bc*it.cob/100);return Object.assign({},it,{qty,total:qty*it.preco});});
+  const kit=sum(items.map(i=>i.total)),kitCap=sum(items.filter(i=>i.tipo==='capital').map(i=>i.total));
+  return {pond,vaaf,vaat,vaar,total:vaaf+vaat+vaar,rem70,margem,comp,disp,items,kit,kitCap,
+    cober:kit?Math.min(1,disp/kit):1,sobra:disp-kit,minCap:vaat*0.15,minEI:vaat*sim.eiMin/100,perEsp:sim.vaaf*f.esp};
+}
+
+const DEF_PP={split:{ber:15,m1:35,m2:50,p1:50,p2:50},razao:{ber:10,m1:15,m2:18,p1:20,p2:22},aee:{base:15,min:20,max:10}};
+function alloc(m,P){const t=sum(m);if(!t||!P)return m.map(()=>0);const raw=m.map(x=>x*P/t),fl=raw.map(Math.floor);let rem=Math.round(P)-sum(fl);
+  raw.map((r,i)=>[i,r-fl[i]]).sort((x,y)=>y[1]-x[1]).slice(0,Math.max(0,rem)).forEach(([i])=>fl[i]++);return fl;}
+function estProf(c,pp){
+  const R=pp.razao,Sp=pp.split,rd=(m,r)=>r?Math.round(m/r):0;
+  const ber=rd(c.creche*Sp.ber/100,R.ber),m1=rd(c.creche*Sp.m1/100,R.m1),m2=rd(c.creche*Sp.m2/100,R.m2),p1=rd(c.pre*Sp.p1/100,R.p1),p2=rd(c.pre*Sp.p2/100,R.p2);
+  const creche=ber+m1+m2,pre=p1+p2,ei=creche+pre,ai=alloc(c.ai,c.profAI),af=alloc(c.af,c.profAF),aiT=sum(ai),afT=sum(af);
+  const aee=rd(c.esp,pp.aee.base),aeeMin=rd(c.esp,pp.aee.min),aeeMax=rd(c.esp,pp.aee.max);
+  const alunos=c.creche+c.pre+sum(c.ai)+sum(c.af),profReg=ei+aiT+afT;
+  return {ber,m1,m2,creche,p1,p2,pre,ei,a1:ai[0],a2:ai[1],a3:ai[2],a4:ai[3],a5:ai[4],ai:aiT,a6:af[0],a7:af[1],a8:af[2],a9:af[3],af:afT,aee,aeeMin,aeeMax,total:ei+aiT+afT+aee,alunos,profReg,aluProf:profReg?alunos/profReg:null};
+}
+/*PURE-END*/
+
+/* ===================== ESTADO ===================== */
+const KEY='strategos_edu_v1';
+const $=s=>document.querySelector(s);
+const fmt=n=>n==null||isNaN(n)?'–':Math.round(n).toLocaleString('pt-BR');
+const fmt1=n=>n==null||isNaN(n)?'–':n.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const brl=n=>n==null||isNaN(n)?'–':n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const brl2=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+let S={cities:JSON.parse(JSON.stringify(SEED)),sel:null,somaEsp:true,
+  sim:{city:null,scen:'base',vaaf:REF.vaafMin,vaat:SCEN.base.vaat,vaar:SCEN.base.vaar,comp:60,eiMin:50,f:Object.assign({},DEF_F),items:JSON.parse(JSON.stringify(DEF_ITEMS))},
+  steps:{},pp:JSON.parse(JSON.stringify(DEF_PP)),sort:{k:'total',d:-1},pending:[]};
+S.sel=new Set(S.cities.map(slug));
+function save(){try{localStorage.setItem(KEY,JSON.stringify({ver:2,cities:S.cities,sel:[...S.sel],somaEsp:S.somaEsp,sim:S.sim,steps:S.steps,pp:S.pp}));}catch(e){}}
+function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(!j)return;
+  if(Array.isArray(j.cities)&&j.cities.length)S.cities=j.cities;
+  const added=[];
+  if(j.ver!==2){SEED.forEach(sc=>{const ex=S.cities.find(x=>slug(x)===slug(sc));if(!ex){S.cities.push(JSON.parse(JSON.stringify(sc)));added.push(slug(sc));}else{if(!ex.grupo&&sc.grupo)ex.grupo=sc.grupo;if(!ex.obs&&sc.obs)ex.obs=sc.obs;}});}
+  S.sel=new Set([...(j.sel||[]),...added].filter(id=>S.cities.some(c=>slug(c)===id)));
+  if(!S.sel.size)S.sel=new Set(S.cities.map(slug));if(typeof j.somaEsp==='boolean')S.somaEsp=j.somaEsp;
+  if(j.sim){S.sim=Object.assign(S.sim,j.sim);S.sim.f=Object.assign({},DEF_F,j.sim.f||{});}
+  if(j.pp)S.pp={split:Object.assign({},DEF_PP.split,j.pp.split),razao:Object.assign({},DEF_PP.razao,j.pp.razao),aee:Object.assign({},DEF_PP.aee,j.pp.aee)};
+  S.steps=j.steps||{};}catch(e){}}
+load();
+const colorOf=c=>{const i=S.cities.findIndex(x=>slug(x)===slug(c));return i>=0&&i<8?`var(--s${i+1})`:'var(--muted)';};
+const selCities=()=>S.cities.filter(c=>S.sel.has(slug(c)));
+
+/* ===================== TABS ===================== */
+const TABS=[['painel','Painel'],['professores','Professores por série'],['dados','Dados · alimentar'],['simulador','Simulador Fundeb'],['contratacao','Contratação e rubricas'],['normas','Base normativa']];
+function buildTabs(){const nav=$('#tabs');nav.innerHTML='';TABS.forEach(([id,l])=>{const b=document.createElement('button');b.textContent=l;b.setAttribute('role','tab');b.dataset.id=id;b.onclick=()=>showTab(id);nav.appendChild(b);});}
+function showTab(id){if(!TABS.some(t=>t[0]===id))id='painel';document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+id));
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.id===id));
+  try{history.replaceState(null,'','#'+id);}catch(e){}
+  if(id==='painel')renderPainel();if(id==='professores')renderProf();if(id==='simulador')updateSim();}
+window.addEventListener('hashchange',()=>showTab(location.hash.slice(1)));
+
+/* ===================== TOOLTIP ===================== */
+const tip=$('#tip');
+function tipShow(html,e){tip.innerHTML=html;tip.style.display='block';const w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;tip.style.left=x+'px';tip.style.top=y+'px';}
+function tipHide(){tip.style.display='none';}
+
+/* ===================== PAINEL ===================== */
+const STAGES=[['creche','Creche'],['pre','Pré-escola'],['ai','Anos iniciais'],['af','Anos finais'],['eja','EJA'],['esp','Educação especial']];
+const stageVal=(c,k)=>k==='ai'?sum(c.ai):k==='af'?sum(c.af):c[k];
+const METRICS=[
+ ['total','Total de matrículas',(c,m)=>m.total,fmt],
+ ['esp','Matrículas de educação especial',c=>c.esp,fmt],
+ ['pctEsp','% educação especial no total',(c,m)=>m.pctEsp,v=>fmt1(v)+'%'],
+ ['pctEI','% educação infantil no total',(c,m)=>m.pctEI,v=>fmt1(v)+'%'],
+ ['pctEJA','% EJA no total',(c,m)=>m.pctEJA,v=>fmt1(v)+'%'],
+ ['aluProfAI','Alunos por professor · anos iniciais',(c,m)=>m.aluProfAI,fmt1],
+ ['aluProfAF','Alunos por professor · anos finais',(c,m)=>m.aluProfAF,fmt1],
+ ['aluEscola','Alunos por escola',(c,m)=>m.aluEscola,fmt],
+ ['prof','Professores (AI + AF)',(c,m)=>m.prof,fmt],
+ ['escolas','Escolas',c=>c.escolas,fmt],
+ ['profEst','Professores estimados (todas as etapas)',c=>estProf(c,S.pp).total,fmt],
+ ['aluProfGeral','Alunos por professor (EI, AI e AF; estimado)',c=>estProf(c,S.pp).aluProf,fmt1]
+];
+function renderChips(){['#cityChips','#cityChips2'].forEach(sel=>{const box=$(sel);if(!box)return;box.innerHTML='';S.cities.forEach(c=>{const id=slug(c);const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',S.sel.has(id));
+  b.innerHTML=`<span class="dot" style="background:${colorOf(c)}"></span>${esc(c.nome)}${c.uf?' / '+esc(c.uf):''}`;
+  b.onclick=()=>{S.sel.has(id)?S.sel.delete(id):S.sel.add(id);save();renderPainel();if($('#t-professores').classList.contains('on'))renderProf();};box.appendChild(b);});});}
+function renderKpis(){const cs=selCities();const ms=cs.map(c=>calc(c,S.somaEsp));
+  const tot=sum(ms.map(m=>m.total)),esc_=sum(cs.map(c=>c.escolas)),prof=sum(ms.map(m=>m.prof)),esp=sum(cs.map(c=>c.esp)),ai=sum(ms.map(m=>m.ai)),af=sum(ms.map(m=>m.af));
+  const k=[['Municípios',cs.length,'selecionados'],['Matrículas',fmt(tot),'total da seleção'],['Escolas',fmt(esc_),''],['Professores',fmt(prof),'AI + AF'],
+   ['Alunos por professor',prof?fmt1((ai+af)/prof):'–','anos iniciais e finais'],['Educação especial',fmt(esp),tot?fmt1(esp/tot*100)+'% do total':'']];
+  $('#kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="n">${x[2]}</div></div>`).join('');}
+function renderInsights(){const cs=selCities();const ul=$('#insights');if(cs.length<2){ul.innerHTML='<li>Selecione ao menos dois municípios para ver comparações.</li>';return;}
+  const rows=cs.map(c=>({c,m:calc(c,S.somaEsp)}));const best=(f,hi=true)=>rows.filter(r=>f(r)!=null).sort((a,b)=>hi?f(b)-f(a):f(a)-f(b))[0];
+  const a=best(r=>r.m.pctEsp),b=best(r=>r.m.aluProfAF),d=best(r=>r.m.aluProfAF,false),e=best(r=>r.m.pctEJA),g=best(r=>r.m.aluEscola);
+  const L=[];
+  if(a)L.push(`<b>${esc(a.c.nome)}</b> tem a maior proporção de matrículas de educação especial: ${fmt1(a.m.pctEsp)}% do total (${fmt(a.c.esp)} alunos).`);
+  if(b&&d)L.push(`Alunos por professor nos anos finais vão de ${fmt1(d.m.aluProfAF)} (<b>${esc(d.c.nome)}</b>) a ${fmt1(b.m.aluProfAF)} (<b>${esc(b.c.nome)}</b>).`);
+  if(e)L.push(`A EJA pesa mais em <b>${esc(e.c.nome)}</b>: ${fmt1(e.m.pctEJA)}% das matrículas.`);
+  if(g)L.push(`Maior escola média: <b>${esc(g.c.nome)}</b>, com ${fmt(g.m.aluEscola)} alunos por escola.`);
+  ul.innerHTML=L.map(x=>`<li>${x}</li>`).join('');}
+function renderStack(){const cs=selCities();const host=$('#stackChart');const pct=$('#stackMode').value==='pct';
+  const cols=['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)','var(--s6)'];
+  $('#stackLegend').innerHTML=STAGES.map((s,i)=>`<span><i style="background:${cols[i]}"></i>${s[1]}</span>`).join('');
+  if(!cs.length){host.innerHTML='<p class="small">Nenhum município selecionado.</p>';return;}
+  const W=Math.max(320,host.clientWidth||800),rowH=34,left=Math.min(150,W*0.28),right=70,H=cs.length*rowH+30;
+  const data=cs.map(c=>{const vals=STAGES.map(s=>stageVal(c,s[0]));return {c,vals,tot:sum(vals)};});
+  const max=pct?1:Math.max(...data.map(d=>d.tot));const sc=(W-left-right)/max;
+  let svg=`<svg width="${W}" height="${H}" role="img" aria-label="Matrículas por etapa e município">`;
+  for(let t=0;t<=4;t++){const x=left+(W-left-right)*t/4;svg+=`<line class="grid" x1="${x}" x2="${x}" y1="0" y2="${H-24}"/><text x="${x}" y="${H-8}" text-anchor="middle">${pct?(t*25)+'%':fmt(max*t/4)}</text>`;}
+  data.forEach((d,r)=>{const y=r*rowH+4;svg+=`<text class="lab" x="${left-8}" y="${y+16}" text-anchor="end">${esc(d.c.nome)}</text>`;let x=left;
+    d.vals.forEach((v,i)=>{const w=(pct?v/d.tot:v)*sc;if(w<=0)return;
+      svg+=`<rect x="${x}" y="${y}" width="${Math.max(w,0)}" height="24" fill="${cols[i]}" stroke="var(--surface)" stroke-width="2" data-r="${r}" data-i="${i}"/>`;x+=w;});
+    svg+=`<text x="${x+6}" y="${y+16}">${pct?'100%':fmt(d.tot)}</text>`;});
+  svg+='</svg>';host.innerHTML=svg;
+  host.querySelectorAll('rect').forEach(el=>{el.onmousemove=e=>{const d=data[+el.dataset.r],i=+el.dataset.i;tipShow(`<b>${esc(d.c.nome)}</b><br>${STAGES[i][1]}: ${fmt(d.vals[i])}<br>${fmt1(d.vals[i]/d.tot*100)}% das matrículas da rede`,e);};el.onmouseleave=tipHide;});}
+function renderRank(){const sel=$('#rankMetric');if(!sel.options.length){METRICS.forEach(m=>sel.add(new Option(m[1],m[0])));sel.value='pctEsp';}
+  const M=METRICS.find(m=>m[0]===sel.value);const host=$('#rankChart');
+  const rows=selCities().map(c=>({c,v:M[2](c,calc(c,S.somaEsp))})).filter(r=>r.v!=null).sort((a,b)=>b.v-a.v);
+  if(!rows.length){host.innerHTML='<p class="small">Sem dados.</p>';return;}
+  const W=Math.max(300,host.clientWidth||500),rowH=32,left=Math.min(140,W*0.3),right=72,H=rows.length*rowH+8,max=Math.max(...rows.map(r=>r.v))||1;
+  let svg=`<svg width="${W}" height="${H}" role="img" aria-label="${esc(M[1])}">`;
+  rows.forEach((r,i)=>{const y=i*rowH+4,w=(W-left-right)*r.v/max;
+    svg+=`<text class="lab" x="${left-8}" y="${y+16}" text-anchor="end">${esc(r.c.nome)}</text><rect x="${left}" y="${y}" width="${w}" height="22" rx="3" fill="var(--s1)" data-i="${i}"/><text x="${left+w+6}" y="${y+16}">${M[3](r.v)}</text>`;});
+  svg+='</svg>';host.innerHTML=svg;
+  host.querySelectorAll('rect').forEach(el=>{el.onmousemove=e=>{const r=rows[+el.dataset.i];tipShow(`<b>${esc(r.c.nome)}</b><br>${esc(M[1])}: ${M[3](r.v)}`,e);};el.onmouseleave=tipHide;});}
+function renderLines(){const host=$('#lineChart');let cs=selCities();const idx=$('#lineMode').value==='idx';
+  let note='';if(cs.length>8){cs=cs.slice(0,8);note='<p class="small">Mostrando as 8 primeiras cidades selecionadas.</p>';}
+  $('#lineLegend').innerHTML=cs.map(c=>`<span><i style="background:${colorOf(c)}"></i>${esc(c.nome)}</span>`).join('');
+  if(!cs.length){host.innerHTML='<p class="small">Nenhum município selecionado.</p>';return;}
+  const series=cs.map(c=>{const raw=[...c.ai,...c.af];const v=idx?raw.map(x=>c.ai[0]?x/c.ai[0]*100:null):raw;return {c,raw,v};});
+  const W=Math.max(300,host.clientWidth||500),H=300,L=52,R=14,T=10,B=30;
+  const all=series.flatMap(s=>s.v).filter(x=>x!=null);let lo=Math.min(...all),hi=Math.max(...all);if(idx){lo=Math.min(lo,100)-5;hi=hi+5;}else{lo=0;hi=hi*1.05;}
+  const X=i=>L+(W-L-R)*i/8,Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo||1));
+  let svg=`<svg width="${W}" height="${H}" role="img" aria-label="Trajetória das matrículas do 1º ao 9º ano">`;
+  for(let t=0;t<=4;t++){const v=lo+(hi-lo)*t/4,y=Y(v);svg+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y}" y2="${y}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${fmt(v)}</text>`;}
+  for(let i=0;i<9;i++)svg+=`<text x="${X(i)}" y="${H-10}" text-anchor="middle">${i+1}º</text>`;
+  if(idx){const y=Y(100);svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;}
+  series.forEach(s=>{const pts=s.v.map((v,i)=>v==null?null:`${X(i)},${Y(v)}`).filter(Boolean).join(' ');svg+=`<polyline points="${pts}" fill="none" stroke="${colorOf(s.c)}" stroke-width="2" stroke-linejoin="round"/>`;
+    s.v.forEach((v,i)=>{if(v!=null)svg+=`<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" fill="${colorOf(s.c)}" stroke="var(--surface)" stroke-width="2"/>`;});});
+  svg+=`<line id="xh" y1="${T}" y2="${H-B}" stroke="var(--muted)" style="display:none"/><rect id="lov" x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/></svg>`;
+  host.innerHTML=svg+note;const ov=host.querySelector('#lov'),xh=host.querySelector('#xh');
+  ov.onmousemove=e=>{const r=ov.getBoundingClientRect();const i=Math.max(0,Math.min(8,Math.round((e.clientX-r.left)/r.width*8)));xh.setAttribute('x1',X(i));xh.setAttribute('x2',X(i));xh.style.display='block';
+    tipShow(`<b>${i+1}º ano</b><br>`+series.map(s=>`<span style="color:#fff">${esc(s.c.nome)}</span>: ${fmt(s.raw[i])}${idx?' (índice '+fmt(s.v[i])+')':''}`).join('<br>'),e);};
+  ov.onmouseleave=()=>{tipHide();xh.style.display='none';};}
+const COLS=[['nome','Município',c=>c.nome,'s'],['uf','UF',c=>c.uf||'?','s'],['creche','Creche',c=>c.creche],['pre','Pré',c=>c.pre],['ai','Anos iniciais',(c,m)=>m.ai],['af','Anos finais',(c,m)=>m.af],['eja','EJA',c=>c.eja],['esp','Esp.',c=>c.esp],
+ ['total','Total',(c,m)=>m.total],['escolas','Escolas',c=>c.escolas],['prof','Prof.',(c,m)=>m.prof],['aluProfAI','Al./prof. AI',(c,m)=>m.aluProfAI,'f'],['aluProfAF','Al./prof. AF',(c,m)=>m.aluProfAF,'f'],['aluEscola','Al./escola',(c,m)=>m.aluEscola],['pctEsp','% esp.',(c,m)=>m.pctEsp,'f']];
+function renderTable(){const cs=selCities().map(c=>({c,m:calc(c,S.somaEsp)}));const col=COLS.find(x=>x[0]===S.sort.k)||COLS[8];
+  cs.sort((a,b)=>{const x=col[2](a.c,a.m),y=col[2](b.c,b.m);return (typeof x==='string'?x.localeCompare(y):(x||0)-(y||0))*S.sort.d;});
+  $('#mainTable').innerHTML='<thead><tr>'+COLS.map(x=>`<th class="s ${x[3]?'':'n'}" data-k="${x[0]}">${x[1]}${S.sort.k===x[0]?(S.sort.d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr></thead><tbody>'+
+   cs.map(r=>'<tr>'+COLS.map(x=>{const v=x[2](r.c,r.m);return `<td class="${x[3]==='s'?'':'n'}">${typeof v==='string'?esc(v):x[3]==='f'?fmt1(v):fmt(v)}</td>`;}).join('')+'</tr>').join('')+'</tbody>';
+  document.querySelectorAll('#mainTable th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;S.sort=S.sort.k===k?{k,d:-S.sort.d}:{k,d:k==='nome'||k==='uf'?1:-1};renderTable();});}
+function renderPainel(){renderChips();renderKpis();renderInsights();renderStack();renderRank();renderLines();renderTable();}
+
+/* ===================== DADOS ===================== */
+const FORM=[['nome','Município','text'],['uf','UF','text'],['grupo','Grupo','text'],['creche','Creches'],['pre','Pré-escolas'],['a1','1º ano'],['a2','2º ano'],['a3','3º ano'],['a4','4º ano'],['a5','5º ano'],['a6','6º ano'],['a7','7º ano'],['a8','8º ano'],['a9','9º ano'],['eja','EJA'],['esp','Educação especial'],['escolas','Escolas'],['profAI','Professores AI'],['profAF','Professores AF']];
+function buildForm(){$('#formRow').innerHTML=FORM.map(f=>`<label class="f">${f[1]}<input id="f_${f[0]}" type="${f[2]||'number'}" ${f[2]?'':'min="0" style="width:96px"'} ${f[0]==='uf'?'maxlength="2" style="width:56px"':''}></label>`).join('');}
+function formToCity(){const g=k=>+($('#f_'+k).value||0);const c={nome:$('#f_nome').value.trim(),uf:$('#f_uf').value.trim().toUpperCase(),grupo:$('#f_grupo').value.trim(),creche:g('creche'),pre:g('pre'),ai:[1,2,3,4,5].map(n=>g('a'+n)),af:[6,7,8,9].map(n=>g('a'+n)),eja:g('eja'),esp:g('esp'),escolas:g('escolas'),profAI:g('profAI'),profAF:g('profAF')};return c;}
+function cityToForm(c){$('#f_nome').value=c.nome;$('#f_uf').value=c.uf||'';$('#f_grupo').value=c.grupo||'';['creche','pre','eja','esp','escolas','profAI','profAF'].forEach(k=>$('#f_'+k).value=c[k]);c.ai.forEach((v,i)=>$('#f_a'+(i+1)).value=v);c.af.forEach((v,i)=>$('#f_a'+(i+6)).value=v);scrollTo({top:$('#formRow').offsetTop-80,behavior:'smooth'});}
+function upsert(c){const id=slug(c);const i=S.cities.findIndex(x=>slug(x)===id);if(i>=0)S.cities[i]=c;else{S.cities.push(c);}S.sel.add(id);}
+function renderBase(){$('#baseTable').innerHTML='<thead><tr><th>Município</th><th>UF</th><th>Grupo</th><th class="n">Matrículas</th><th class="n">Esp.</th><th class="n">Escolas</th><th class="n">Prof.</th><th></th></tr></thead><tbody>'+
+  S.cities.map((c,i)=>{const m=calc(c,S.somaEsp);return `<tr><td>${esc(c.nome)}${c.obs?` <span title="${esc(c.obs)}" style="color:var(--bad);cursor:help">⚠</span>`:''}</td><td>${esc(c.uf||'?')}</td><td>${esc(c.grupo||'')}</td><td class="n">${fmt(m.total)}</td><td class="n">${fmt(c.esp)}</td><td class="n">${fmt(c.escolas)}</td><td class="n">${fmt(m.prof)}</td><td><button class="btn ghost sm" data-e="${i}">Editar</button> <button class="btn ghost sm" data-d="${i}">Remover</button></td></tr>`;}).join('')+'</tbody>';
+  document.querySelectorAll('#baseTable [data-e]').forEach(b=>b.onclick=()=>cityToForm(S.cities[+b.dataset.e]));
+  document.querySelectorAll('#baseTable [data-d]').forEach(b=>b.onclick=()=>{const c=S.cities[+b.dataset.d];S.sel.delete(slug(c));S.cities.splice(+b.dataset.d,1);save();refreshAll();});}
+function refreshAll(){renderBase();fillSimCities();renderPainel();if($('#t-professores').classList.contains('on'))renderProf();if($('#t-simulador').classList.contains('on'))updateSim();}
+function renderPreview(){const box=$('#preview');if(!S.pending.length){box.innerHTML='';$('#commitBtn').disabled=true;return;}
+  box.innerHTML='<div class="scroll"><table><thead><tr><th>Município</th><th>UF</th><th class="n">Creche</th><th class="n">Pré</th><th class="n">AI (soma)</th><th class="n">AF (soma)</th><th class="n">EJA</th><th class="n">Esp.</th><th class="n">Escolas</th><th class="n">Prof. AI</th><th class="n">Prof. AF</th><th>Situação</th></tr></thead><tbody>'+
+   S.pending.map(c=>{const miss=missingFields(c);const ai=c.ai.some(x=>x==null)?'–':fmt(sum(c.ai));const af=c.af.some(x=>x==null)?'–':fmt(sum(c.af));
+    return `<tr><td>${esc(c.nome)}</td><td>${esc(c.uf||'?')}</td><td class="n">${fmt(c.creche)}</td><td class="n">${fmt(c.pre)}</td><td class="n">${ai}</td><td class="n">${af}</td><td class="n">${fmt(c.eja)}</td><td class="n">${fmt(c.esp)}</td><td class="n">${fmt(c.escolas)}</td><td class="n">${fmt(c.profAI)}</td><td class="n">${fmt(c.profAF)}</td><td>${miss.length?`<span class="pill no">faltam: ${esc(miss.join(', '))}</span>`:'<span class="pill cus">completo</span>'}</td></tr>`;}).join('')+'</tbody></table></div>';
+  $('#commitBtn').disabled=false;}
+function wireDados(){
+  buildForm();
+  $('#parseBtn').onclick=()=>{const r=parseAny($('#pasteBox').value);S.pending=r.cities.map(c=>{const o=Object.assign(emptyCity(),c);if(!o.uf&&!c.uf)o.uf='';return o;});renderPreview();
+    if(r.msg)$('#preview').innerHTML=`<div class="note bad">${esc(r.msg)}</div>`;else if(!S.pending.length)$('#preview').innerHTML='<div class="note bad">Nenhuma cidade identificada.</div>';};
+  $('#commitBtn').onclick=()=>{S.pending.forEach(c=>{const o=Object.assign(emptyCity(),c);['creche','pre','eja','esp','escolas','profAI','profAF'].forEach(k=>o[k]=+o[k]||0);o.ai=o.ai.map(x=>+x||0);o.af=o.af.map(x=>+x||0);upsert(o);});
+    const n=S.pending.length;S.pending=[];$('#pasteBox').value='';save();renderPreview();refreshAll();$('#preview').innerHTML=`<div class="note">${n} município(s) adicionados ou atualizados. Já aparecem no painel e no simulador.</div>`;};
+  $('#csvModelBtn').onclick=()=>{$('#pasteBox').value='nome,uf,creche,pre,ano1,ano2,ano3,ano4,ano5,ano6,ano7,ano8,ano9,eja,esp,escolas,profAI,profAF\nNova Cidade,CE,500,600,200,210,220,230,240,250,240,230,220,80,120,12,60,70';};
+  $('#saveForm').onclick=()=>{const c=formToCity();if(!c.nome){$('#formMsg').textContent='Informe o nome do município.';return;}upsert(c);save();refreshAll();$('#formMsg').textContent='Salvo: '+c.nome;};
+  $('#clearForm').onclick=()=>{FORM.forEach(f=>$('#f_'+f[0]).value='');$('#formMsg').textContent='';};
+  $('#resetBtn').onclick=()=>{S.cities=JSON.parse(JSON.stringify(SEED));S.sel=new Set(S.cities.map(slug));save();refreshAll();};
+  $('#jsonCopy').onclick=async()=>{const t=JSON.stringify(S.cities,null,1);$('#jsonBox').value=t;try{await navigator.clipboard.writeText(t);$('#jsonMsg').textContent='JSON copiado.';}catch(e){$('#jsonBox').select();$('#jsonMsg').textContent='Selecione e copie (Ctrl+C).';}};
+  $('#jsonLoad').onclick=()=>{const r=parseAny($('#jsonBox').value);if(r.msg||!r.cities.length){$('#jsonMsg').textContent=r.msg||'JSON vazio.';return;}S.cities=r.cities.map(c=>Object.assign(emptyCity(),c));S.sel=new Set(S.cities.map(slug));save();refreshAll();$('#jsonMsg').textContent='Base substituída por '+S.cities.length+' municípios.';};
+}
+
+/* ===================== SIMULADOR ===================== */
+function fillSimCities(){const sel=$('#simCity');const cur=S.sim.city;sel.innerHTML=S.cities.map(c=>`<option value="${slug(c)}">${esc(c.nome)}${c.uf?' / '+esc(c.uf):''}</option>`).join('');
+  sel.value=S.cities.some(c=>slug(c)===cur)?cur:(S.cities[0]?slug(S.cities[0]):'');S.sim.city=sel.value;}
+function wireSim(){
+  const P=S.sim;fillSimCities();$('#simCity').onchange=e=>{S.sim.city=e.target.value;save();updateSim();};
+  const setScen=()=>{if(P.scen!=='custom'){P.vaat=SCEN[P.scen].vaat;P.vaar=SCEN[P.scen].vaar;}$('#pVaat').value=P.vaat;$('#pVaar').value=P.vaar;};
+  $('#simScen').value=P.scen;$('#pVaaf').value=P.vaaf;$('#pVaat').value=P.vaat;$('#pVaar').value=P.vaar;$('#pComp').value=P.comp;$('#pEi').value=P.eiMin;
+  $('#simScen').onchange=e=>{P.scen=e.target.value;setScen();save();updateSim();};
+  [['pVaaf','vaaf'],['pVaat','vaat'],['pVaar','vaar'],['pComp','comp'],['pEi','eiMin']].forEach(([id,k])=>{$('#'+id).oninput=e=>{P[k]=+e.target.value||0;if(k==='vaat'||k==='vaar'){P.scen='custom';$('#simScen').value='custom';}save();updateSim();};});
+  $('#pFat').innerHTML=STAGES.map(s=>`<label class="f">${s[1]}<input type="number" step="0.01" id="fat_${s[0]}" value="${P.f[s[0]]}"></label>`).join('');
+  STAGES.forEach(s=>$('#fat_'+s[0]).oninput=e=>{P.f[s[0]]=+e.target.value||0;save();updateSim();});
+  buildKitTable();
+  $('#copySim').onclick=async()=>{const t=simText();try{await navigator.clipboard.writeText(t);$('#copyMsg').textContent='Resumo copiado.';}catch(e){$('#copyMsg').textContent='Não foi possível copiar automaticamente.';}};
+}
+function buildKitTable(){const P=S.sim;$('#kitTable').innerHTML='<thead><tr><th>Item</th><th>Natureza</th><th class="n">Cobertura</th><th class="n">Preço un.</th><th class="n">Qtd.</th><th class="n">Total</th><th>Cabe?</th></tr></thead><tbody>'+
+  P.items.map((it,i)=>`<tr><td><b>${esc(it.nome)}</b><div class="small">${esc(it.lei)} · base: ${it.base==='escola'?'nº de escolas':'alunos de educação especial'}</div></td><td><span class="pill ${it.tipo==='capital'?'cap':'cus'}">${it.tipo==='capital'?'Capital':'Custeio'}</span><div class="small">${esc(it.nat)}</div></td>
+   <td class="n"><input type="number" min="0" max="100" style="width:64px" data-c="${i}" value="${it.cob}"> %</td><td class="n"><input type="number" min="0" style="width:90px" data-p="${i}" value="${it.preco}"></td><td class="n" id="q${i}"></td><td class="n" id="t${i}"></td><td id="k${i}"></td></tr>`).join('')+'<tr><td colspan="5"><b>Total do kit</b></td><td class="n" id="kt"></td><td></td></tr></tbody>';
+  document.querySelectorAll('#kitTable [data-c]').forEach(el=>el.oninput=()=>{P.items[+el.dataset.c].cob=+el.value||0;save();updateSim();});
+  document.querySelectorAll('#kitTable [data-p]').forEach(el=>el.oninput=()=>{P.items[+el.dataset.p].preco=+el.value||0;save();updateSim();});}
+function simText(){const c=S.cities.find(x=>slug(x)===S.sim.city);if(!c)return '';const r=simulate(c,S.sim);
+  return `Simulação Fundeb · ${c.nome}${c.uf?'/'+c.uf:''}\nMatrículas ponderadas: ${fmt(r.pond)}\nReceita estimada: ${brl(r.total)} (VAAF ${brl(r.vaaf)}, VAAT ${brl(r.vaat)}, VAAR ${brl(r.vaar)})\nMínimo para remuneração (70%): ${brl(r.rem70)}\nMargem de MDE (30% + VAAR): ${brl(r.margem)}; comprometido ${S.sim.comp}%\nDisponível para educação especial: ${brl(r.disp)}\nCusto do kit: ${brl(r.kit)}; cobertura ${fmt(r.cober*100)}%\nPremissas ilustrativas editáveis; confirme valores no FNDE.`;}
+function updateSim(){const c=S.cities.find(x=>slug(x)===S.sim.city);if(!c){$('#simKpis').innerHTML='<p>Cadastre um município.</p>';return;}
+  const P=S.sim,r=simulate(c,P);
+  const cap=REF.vaatMin-P.vaaf;const w=$('#capWarn');if(P.vaat>cap+0.01){w.style.display='block';w.textContent=`A complementação VAAT por aluno (${brl2(P.vaat)}) supera a diferença entre o VAAT-MIN de referência (${brl2(REF.vaatMin)}) e o VAAF (${brl2(cap)}). Revise o valor.`;}else w.style.display='none';
+  const k=[['Matrículas ponderadas',fmt(r.pond),'alunos × fatores'],['Receita Fundeb estimada',brl(r.total),'VAAF + VAAT + VAAR'],['Mínimo para remuneração',brl(r.rem70),'70% de VAAF + VAAT'],['Margem de MDE',brl(r.margem),'30% + VAAR'],
+    ['Disponível p/ educação especial',brl(r.disp),'após '+P.comp+'% comprometido'],['Custo do kit',brl(r.kit),r.cober>=1?'cabe por completo':'cobre '+fmt(r.cober*100)+'%']];
+  $('#simKpis').innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v" style="font-size:26px">${x[1]}</div><div class="n">${x[2]}</div></div>`).join('');
+  /* barra de orçamento */
+  const host=$('#budgetBar');const W=Math.max(300,host.clientWidth||600);const segs=[['Remuneração (mín. 70%)',r.rem70,'var(--s1)'],['Margem já comprometida',r.comp,'var(--muted)'],['Disponível p/ educação especial',r.disp,'var(--s3)']];
+  const tot=r.total||1;let x=0,svg=`<svg width="${W}" height="64" role="img" aria-label="Distribuição da receita do Fundeb">`;
+  segs.forEach((s,i)=>{const wd=Math.max(0,W*s[1]/tot);svg+=`<rect x="${x}" y="6" width="${wd}" height="34" fill="${s[2]}" stroke="var(--surface)" stroke-width="2" data-i="${i}"/>`;if(wd>60)svg+=`<text x="${x+wd/2}" y="28" text-anchor="middle" style="fill:#fff;font-weight:700">${fmt(s[1]/tot*100)}%</text>`;x+=wd;});
+  host.innerHTML=svg+'</svg>';host.querySelectorAll('rect').forEach(el=>{el.onmousemove=e=>{const s=segs[+el.dataset.i];tipShow(`<b>${s[0]}</b><br>${brl(s[1])}<br>${fmt1(s[1]/tot*100)}% da receita estimada`,e);};el.onmouseleave=tipHide;});
+  $('#budgetLegend').innerHTML=segs.map(s=>`<span><i style="background:${s[2]}"></i>${s[0]}: ${brl(s[1])}</span>`).join('');
+  $('#minLines').innerHTML=`Pisos que valem para toda a rede, não só para este kit: <b>${brl(r.minCap)}</b> da complementação VAAT em despesas de capital (15%) e <b>${brl(r.minEI)}</b> em educação infantil (${P.eiMin}% de referência; o percentual municipal vem do indicador oficial). O VAAR fica fora da base dos 70%.`;
+  /* kit */
+  let cum=0;r.items.forEach((it,i)=>{$('#q'+i).textContent=fmt(it.qty);$('#t'+i).textContent=brl(it.total);const before=cum;cum+=it.total;
+    $('#k'+i).innerHTML=cum<=r.disp?'<span class="pill cus">sim</span>':before<r.disp?`<span class="pill cap">parcial (${fmt((r.disp-before)/it.total*100)}%)</span>`:'<span class="pill no">não</span>';});
+  $('#kt').innerHTML=`<b>${brl(r.kit)}</b>`;
+  const perAluno=c.esp?r.kit/c.esp:0;
+  $('#kitSummary').innerHTML=r.sobra>=0?`O kit completo cabe: sobram <b>${brl(r.sobra)}</b> da margem disponível. Custo médio de <b>${brl(perAluno)}</b> por aluno de educação especial, contra <b>${brl(r.perEsp)}</b> por ano que cada matrícula especial gera de VAAF.`:
+   `A margem disponível cobre <b>${fmt(r.cober*100)}%</b> do kit; faltam <b>${brl(-r.sobra)}</b>. Priorize na ordem da tabela (de cima para baixo), reduza a cobertura, faseie em dois exercícios ou aumente a margem (menos compromissos, VAAR habilitado). Custo médio: <b>${brl(perAluno)}</b> por aluno de educação especial; cada matrícula especial gera cerca de <b>${brl(r.perEsp)}</b> por ano de VAAF.`;
+  $('#memo').innerHTML=`<ol style="margin:4px 0 0 18px;padding:0">
+   <li>Matrículas ponderadas = Σ (matrícula × fator) = <b>${fmt(r.pond)}</b>.</li>
+   <li>VAAF = ${fmt(r.pond)} × ${brl2(P.vaaf)} = <b>${brl(r.vaaf)}</b>; complementação VAAT = × ${brl2(P.vaat)} = <b>${brl(r.vaat)}</b>; VAAR = × ${brl2(P.vaar)} = <b>${brl(r.vaar)}</b>.</li>
+   <li>Mínimo para remuneração = 70% × (VAAF + VAAT) = <b>${brl(r.rem70)}</b>. O VAAR não entra nessa base.</li>
+   <li>Margem de MDE = 30% × (VAAF + VAAT) + VAAR = <b>${brl(r.margem)}</b>; comprometido (${P.comp}%) = ${brl(r.comp)}; disponível = <b>${brl(r.disp)}</b>.</li>
+   <li>Kit: quantidades = alunos de educação especial (ou escolas) × cobertura; custo = quantidade × preço unitário.</li></ol>
+   <p>Limites do modelo: o VAAF real da UF e o VAAT efetivo da rede vêm das portarias do FNDE; esta simulação usa o VAAF-MIN de referência (${brl2(REF.vaafMin)}) como piso, e os fatores-base sem NSE/DRec. Alimentação escolar, terapias clínicas e outras despesas do art. 71 da LDB não entram.</p>`;
+}
+
+/* ===================== CONTRATAÇÃO ===================== */
+const STEPS=[
+ ['Diagnosticar a demanda','Estudo de caso e PAEE/PEI por estudante; consolidar nº de alunos, tipos de recurso e escolas.',['Decreto 12.686 arts. 11 e 12 (estudo de caso, PAEE e PEI)','Oferta de apoio escolar não depende de laudo (art. 14, §2º)','Cruzar com o Censo Escolar e a lista de matrículas de educação especial'],'Secretaria de Educação · equipe do AEE','Planilha de demanda por escola e item'],
+ ['Confirmar fonte e saldo','Separar a fonte correta, conferir saldo da conta específica do Fundeb e o cumprimento do mínimo de 70% em remuneração.',['Fontes: impostos e transferências (540), VAAF (541), VAAT (542), VAAR (543)','Lei 14.113 arts. 26 e 27: 70% remuneração; VAAT com 15% capital e 50% educação infantil','Pedir ao contador extrato e demonstrativo por fonte'],'Contabilidade · Secretaria de Fazenda','Certidão de saldo e de disponibilidade por fonte'],
+ ['Enquadrar a despesa em MDE','Cada item precisa estar no art. 70 da LDB e fora das vedações do art. 71.',['Material didático-escolar: art. 70, VIII','Equipamentos e bens de ensino: art. 70, II e V','Formação e aperfeiçoamento: art. 70, I','Fora: alimentação, saúde e assistência (art. 71)'],'Controle Interno · Secretaria de Educação','Nota técnica de enquadramento (modelo de 1 página)'],
+ ['Programar a dotação','Verificar se há dotação na LOA/PPA para a ação; se não, abrir crédito.',['Função 12 · Subfunção 367 (educação especial) ou a da etapa atendida','Elemento: 3.3.90.30, 3.3.90.32, 3.3.90.39 ou 4.4.90.52, conforme o item','Crédito suplementar ou especial: Lei 4.320, arts. 41 a 43, nos limites da LOA','Registrar a fonte de recurso na dotação'],'Planejamento e Orçamento','Dotação reservada e (se preciso) decreto de crédito'],
+ ['Planejar a contratação','Estudo técnico preliminar, termo de referência e matriz de riscos.',['Lei 14.133 art. 18: ETP, TR, estimativa de valor','Especificação com requisitos de acessibilidade (Lei 13.146/2015, art. 28)','Parcelamento por lote: material, tecnologia assistiva, formação','Plano de Contratações Anual: incluir o item'],'Setor requisitante · Compras','ETP, TR e mapa de riscos'],
+ ['Pesquisar preços','Cesta de preços com várias fontes, desconsiderando valores inexequíveis ou excessivos.',['Lei 14.133 art. 23 e regulamento municipal','Painel de Preços, atas vigentes, contratos similares, fornecedores','Guardar memória de cálculo'],'Compras','Mapa de preços e valor estimado'],
+ ['Escolher o rito','Definir modalidade e forma de contratação.',['Pregão eletrônico para bens e serviços comuns (art. 28, I e art. 29)','Registro de Preços (arts. 82 a 86) para entregas parceladas em várias escolas','Dispensa por valor (art. 75, I e II): conferir o limite atualizado por decreto','Inexigibilidade (art. 74) apenas com inviabilidade de competição comprovada','Parcerias com instituições sem fins lucrativos: Decreto 12.686 art. 4º-A e Lei 13.019/2015 (chamamento público)'],'Compras · Procuradoria','Justificativa da modalidade'],
+ ['Parecer jurídico e controle','Análise jurídica e controle prévio.',['Lei 14.133 art. 53 (parecer jurídico) e art. 169 (três linhas de defesa)','Dar ciência ao CACS-Fundeb sobre o plano de aplicação'],'Procuradoria · Controle Interno','Parecer e manifestação do CACS'],
+ ['Licitar e contratar','Publicar, julgar, habilitar e homologar; assinar contrato ou ata.',['Divulgar no PNCP (art. 54) e no portal do município','Empenho na fonte Fundeb correta (Lei 4.320 arts. 58 a 60)','Designar gestor e fiscal do contrato (art. 117)'],'Comissão de contratação · Gestor do contrato','Contrato/ata, empenho e portaria de fiscais'],
+ ['Receber, liquidar e pagar','Conferir entrega contra o TR, atestar, liquidar e pagar pela conta do Fundeb.',['Pagamento por transferência eletrônica identificando o credor, a partir da conta específica','Tombar bens permanentes (4.4.90.52)','Registrar a distribuição às escolas e aos estudantes (recibos)'],'Fiscal do contrato · Tesouraria','Termo de recebimento, liquidação, tombamento'],
+ ['Prestar contas e monitorar','Demonstrar aplicação e resultado.',['RREO/SIOPE, relatório ao CACS-Fundeb e portal da transparência','Sistema do tribunal de contas estadual','Acompanhar PAEE/PEI e condicionalidades do VAAR'],'Educação · Contabilidade · CACS','Relatório de execução e de resultados']
+];
+const RUB=[
+ ['Material didático-escolar acessível (ampliado, tátil, Braille, jogos adaptados)','3.3.90.30 (consumo) ou 3.3.90.32 (distribuição gratuita)','custeio','Todas as fontes do Fundeb','LDB art. 70, VIII; Decreto 12.686 art. 19, VII','Distribuição gratuita aos estudantes: documentar recibo.'],
+ ['Recursos de acessibilidade e tecnologia assistiva de baixo custo','3.3.90.30','custeio','Todas','Decreto art. 3º, V e art. 19, VIII; LDB art. 70, II e V','Classificar por durabilidade: bens duráveis vão para capital.'],
+ ['Tablets, computadores e dispositivos com CAA','4.4.90.52','capital','Todas; ajuda a cumprir os 15% de capital da complementação VAAT','LDB art. 70, II e V; Decreto art. 12, §4º','Parecer pedagógico para o uso como tecnologia assistiva; tombamento.'],
+ ['Mobiliário e equipamentos da sala de recursos multifuncional','4.4.90.52','capital','Todas; idem acima','LDB art. 70, II e V','Sala em escola comum; matrícula no AEE não substitui a da classe comum (art. 8º).'],
+ ['Adequações de acessibilidade em prédios escolares','4.4.90.51 (obras) ou 3.3.90.39 (manutenção)','capital','Todas','LDB art. 70, II','Obra exige projeto, planilha e fiscalização de engenharia.'],
+ ['Formação continuada AEE (360 h) e apoio escolar (180 h)','3.3.90.39; diárias 3.3.90.14, se houver','custeio','Margem de MDE e VAAR','LDB art. 70, I; Decreto arts. 13 e 15','Carga horária mínima definida por ato do MEC.'],
+ ['Remuneração de professores do AEE e profissionais de apoio','3.1.90.11 ou 3.1.90.04','custeio','Parcela dos 70%, se profissional da educação em efetivo exercício','Lei 14.113 art. 26; Decreto arts. 13 a 15','Terceirização de apoio escolar pode não contar nos 70%: verificar o vínculo.'],
+ ['Parcerias com instituições especializadas sem fins lucrativos','Conforme o instrumento (ex.: 3.3.50.43 ou 3.3.90.39)','custeio','Verificar o enquadramento do Fundeb para conveniadas antes de empenhar','Decreto art. 3º, X e art. 4º-A; LDB art. 58; Lei 13.019/2015','Decreto 12.686 art. 19-A remete ao art. 7º, §3º, I, “d”, da Lei 14.113; conferir texto.'],
+ ['Terapias clínicas (fonoaudiologia, terapia ocupacional, psicologia clínica)','–','no','Não paga com Fundeb','LDB art. 71, IV','Financiar por saúde ou assistência social, com articulação intersetorial.']
+];
+const FONTES=[['540','Transferências do Fundeb · impostos e transferências de impostos','Base dos 70% de remuneração e da margem de MDE'],['541','Complementação da União · VAAF','Mesmas regras de aplicação do Fundo'],['542','Complementação da União · VAAT','15% mínimo em capital e 50% global para educação infantil'],['543','Complementação da União · VAAR','Fora da base dos 70%; aplicar em MDE da educação básica'],['544','Precatórios do Fundef','Regras próprias; não misturar com o Fundeb']];
+const NORMS=[
+ ['Art. 1º, §3º','Sistema educacional inclusivo organizado pelo sistema geral de ensino','Matrícula em classe e escola comuns, com apoio; o material vai à rede regular'],
+ ['Art. 3º, V; art. 19, VII e VIII','Tecnologia assistiva, adaptações razoáveis, materiais didáticos acessíveis e recursos de acessibilidade','Base de objeto para os itens do kit'],
+ ['Art. 3º, X; art. 4º-A','Apoio e parcerias com instituições privadas sem fins lucrativos especializadas, na forma do art. 58 da LDB','Rito próprio (Lei 13.019) e enquadramento no Fundeb a conferir'],
+ ['Arts. 11 e 12','Estudo de caso fundamenta PAEE e PEI, documento individualizado e contínuo','O estudo de caso é a justificativa técnica da demanda'],
+ ['Art. 12, §4º','Parecer pedagógico para dispositivos digitais portáteis como tecnologia assistiva','Anexar ao processo de compra de tablets'],
+ ['Arts. 13 e 15','Formação mínima: AEE, 360 h; apoio escolar, 180 h, nível médio','Item de formação do kit'],
+ ['Art. 14, §2º','Oferta de apoio escolar sem exigir laudo','Planejar equipe sem depender de diagnóstico clínico'],
+ ['Art. 19-A','Assegura a distribuição de recursos do Fundeb prevista no art. 7º, §3º, I, “d”, da Lei 14.113/2020','Remissão à ponderação do Fundeb; ler o dispositivo da Lei para a rede conveniada']
+];
+const RULES=[
+ 'No mínimo 70% dos recursos anuais do Fundo, sem o VAAR, vão para a remuneração dos profissionais da educação básica em efetivo exercício.',
+ 'Na complementação VAAT, no mínimo 15% vão para despesas de capital, e 50% do total global vão para a educação infantil.',
+ 'O que sobra do Fundeb só pode ser aplicado em MDE, conforme o art. 70 da LDB (material didático-escolar, equipamentos, formação, transporte, entre outros).',
+ 'Os valores de referência de 2026 usados aqui (VAAF-MIN R$ 5.962,79; VAAT-MIN R$ 10.194,38) vêm da estimativa inicial da Portaria Interministerial 14/2025; confira atualizações do FNDE.',
+ 'Os fatores de ponderação 2026 estão na Resolução CIF nº 16/2025, com multiplicadores de nível socioeconômico e de disponibilidade de recursos.'
+];
+const LINKS=[['Decreto 12.773/2025 (Planalto)','https://www.planalto.gov.br/ccivil_03/_Ato2023-2026/2025/decreto/D12773.htm'],['Decreto 12.686/2025 consolidado (Planalto)','https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/decreto/D12686.htm'],['Lei 14.113/2020, Lei do Fundeb (Planalto)','https://planalto.gov.br/ccivil_03/_ato2019-2022/2020/lei/l14113.htm'],['FNDE · Valor aluno/ano e receita prevista 2026','https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/financiamento/fundeb/Valoralunoanoereceitaanualprevista2026.pdf'],['FNDE · Resolução CIF nº 16/2025 (ponderações)','https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/financiamento/fundeb/legislacao/2025/resolucao-cif-no-16.pdf']];
+function renderContratacao(){
+  $('#steps').innerHTML=STEPS.map((s,i)=>`<div class="step ${S.steps[i]?'done':''}" id="st${i}"><div class="num">${i+1}</div><div><h3>${esc(s[0])}</h3><div class="small">${esc(s[1])}</div><ul>${s[2].map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="meta"><b>Quem:</b> ${esc(s[3])} · <b>Entregável:</b> ${esc(s[4])}</div></div><label class="small"><input type="checkbox" data-s="${i}" ${S.steps[i]?'checked':''}> feito</label></div>`).join('');
+  document.querySelectorAll('#steps [data-s]').forEach(el=>el.onchange=()=>{S.steps[el.dataset.s]=el.checked;$('#st'+el.dataset.s).classList.toggle('done',el.checked);save();});
+  $('#rubTable').innerHTML='<thead><tr><th>Item</th><th>Elemento de despesa</th><th>Natureza</th><th>Fonte / observação</th><th>Base legal</th><th>Cuidado</th></tr></thead><tbody>'+RUB.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td><span class="pill ${r[2]==='capital'?'cap':r[2]==='no'?'no':'cus'}">${r[2]==='capital'?'Capital':r[2]==='no'?'Vedado':'Custeio'}</span></td><td>${esc(r[3])}</td><td>${esc(r[4])}</td><td>${esc(r[5])}</td></tr>`).join('')+'</tbody>';
+  $('#fonteTable').innerHTML='<thead><tr><th>Código</th><th>Fonte</th><th>Uso</th></tr></thead><tbody>'+FONTES.map(f=>`<tr><td><b>${f[0]}</b></td><td>${esc(f[1])}</td><td>${esc(f[2])}</td></tr>`).join('')+'</tbody>';
+  $('#normTable').innerHTML='<thead><tr><th>Dispositivo (Decreto 12.686 alterado)</th><th>O que diz</th><th>Efeito prático</th></tr></thead><tbody>'+NORMS.map(n=>`<tr><td><b>${esc(n[0])}</b></td><td>${esc(n[1])}</td><td>${esc(n[2])}</td></tr>`).join('')+'</tbody>';
+  $('#fundebRules').innerHTML=RULES.map(x=>`<li>${esc(x)}</li>`).join('');
+  $('#links').innerHTML=LINKS.map(l=>`<li><a href="${l[1]}" target="_blank" rel="noopener">${esc(l[0])}</a></li>`).join('');
+}
+
+
+/* ===================== PROFESSORES ===================== */
+const PCOLS=[['ber','Berçário','ei'],['m1','Maternal I','ei'],['m2','Maternal II','ei'],['creche','Creche','ei',1],['p1','Pré I','ei'],['p2','Pré II','ei'],['pre','Pré-escola','ei',1],
+ ['a1','1º','ai'],['a2','2º','ai'],['a3','3º','ai'],['a4','4º','ai'],['a5','5º','ai'],['ai','Anos iniciais','ai',1],['a6','6º','af'],['a7','7º','af'],['a8','8º','af'],['a9','9º','af'],['af','Anos finais','af',1],
+ ['aee','AEE (base)','',1],['faixa','Faixa AEE','',0],['total','Total estimado','',1],['aluProf','Al./prof. (EI, AI e AF)','',0]];
+function profGroups(){const gs=[];selCities().forEach(c=>{const g=c.grupo||'Sem grupo';if(!gs.includes(g))gs.push(g);});return gs;}
+function sumEst(list){const t={};['ber','m1','m2','creche','p1','p2','pre','a1','a2','a3','a4','a5','ai','a6','a7','a8','a9','af','aee','aeeMin','aeeMax','total','alunos','profReg','ei'].forEach(k=>t[k]=sum(list.map(e=>e[k])));t.aluProf=t.profReg?t.alunos/t.profReg:null;return t;}
+function pCell(k,e){if(k==='faixa')return fmt(e.aeeMin)+'–'+fmt(e.aeeMax);if(k==='aluProf')return fmt1(e.aluProf);return fmt(e[k]);}
+function renderProf(){
+  const cs=selCities();const rows=cs.map(c=>({c,e:estProf(c,S.pp)}));const T=sumEst(rows.map(r=>r.e));
+  $('#pKpis').innerHTML=[['Professores estimados',fmt(T.total),'todas as etapas'],['Educação infantil',fmt(T.ei),'creche + pré (estimado)'],['Anos iniciais',fmt(T.ai),'total informado'],['Anos finais',fmt(T.af),'total informado'],['AEE',fmt(T.aee),'1 professor a cada '+S.pp.aee.base+' alunos'],['Alunos por professor',fmt1(T.aluProf),'EI, AI e AF']]
+    .map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="n">${x[2]}</div></div>`).join('');
+  const obs=cs.filter(c=>c.obs);$('#pObs').innerHTML=obs.map(c=>`<div class="note bad"><b>Conferir dados de ${esc(c.nome)}:</b> ${esc(c.obs)}</div>`).join('');
+  /* barras empilhadas */
+  const host=$('#pStack');const cols=['var(--s1)','var(--s3)','var(--s4)','var(--s7)'],names=['Educação infantil (est.)','Anos iniciais','Anos finais','AEE (est.)'];
+  $('#pLegend').innerHTML=names.map((n,i)=>`<span><i style="background:${cols[i]}"></i>${n}</span>`).join('');
+  if(!rows.length){host.innerHTML='<p class="small">Nenhum município selecionado.</p>';}else{
+    const W=Math.max(320,host.clientWidth||800),rowH=30,left=Math.min(160,W*0.28),right=60,H=rows.length*rowH+30;
+    const data=rows.map(r=>({c:r.c,v:[r.e.ei,r.e.ai,r.e.af,r.e.aee]})).map(d=>Object.assign(d,{tot:sum(d.v)}));const max=Math.max(...data.map(d=>d.tot))||1,sc=(W-left-right)/max;
+    let svg=`<svg width="${W}" height="${H}" role="img" aria-label="Professores por etapa e município">`;
+    for(let t=0;t<=4;t++){const x=left+(W-left-right)*t/4;svg+=`<line class="grid" x1="${x}" x2="${x}" y1="0" y2="${H-24}"/><text x="${x}" y="${H-8}" text-anchor="middle">${fmt(max*t/4)}</text>`;}
+    data.forEach((d,r)=>{const y=r*rowH+3;svg+=`<text class="lab" x="${left-8}" y="${y+15}" text-anchor="end">${esc(d.c.nome)}</text>`;let x=left;
+      d.v.forEach((v,i)=>{const w=v*sc;if(w<=0)return;svg+=`<rect x="${x}" y="${y}" width="${w}" height="22" fill="${cols[i]}" stroke="var(--surface)" stroke-width="2" data-r="${r}" data-i="${i}"/>`;x+=w;});
+      svg+=`<text x="${x+6}" y="${y+15}">${fmt(d.tot)}</text>`;});
+    host.innerHTML=svg+'</svg>';
+    host.querySelectorAll('rect').forEach(el=>{el.onmousemove=e=>{const d=data[+el.dataset.r],i=+el.dataset.i;tipShow(`<b>${esc(d.c.nome)}</b><br>${names[i]}: ${fmt(d.v[i])}<br>${fmt1(d.v[i]/d.tot*100)}% dos professores estimados`,e);};el.onmouseleave=tipHide;});}
+  /* tabela */
+  const band=k=>k==='ei'?'band-ei':k==='ai'?'band-ai':k==='af'?'band-af':'';
+  let h='<thead><tr><th class="sticky">Município</th><th>Grupo</th>'+PCOLS.map(p=>`<th class="n">${p[1]}</th>`).join('')+'</tr></thead><tbody>';
+  const line=(label,grupo,e,cls)=>`<tr class="${cls||''}"><td class="sticky">${label}</td><td>${esc(grupo||'')}</td>`+PCOLS.map(p=>`<td class="n ${cls?'':band(p[2])}">${pCell(p[0],e)}</td>`).join('')+'</tr>';
+  rows.forEach(r=>{h+=line(esc(r.c.nome),r.c.grupo,r.e);});
+  const gs=profGroups();
+  if(gs.length>1)gs.forEach(g=>{h+=line('Subtotal · '+esc(g),'',sumEst(rows.filter(r=>(r.c.grupo||'Sem grupo')===g).map(r=>r.e)),'sub');});
+  h+=line('Total geral','',T,'tot')+'</tbody>';$('#pTable').innerHTML=h;
+  window._ptsv=()=>{const head=['Município','Grupo',...PCOLS.map(p=>p[1])].join('\t');const body=rows.map(r=>[r.c.nome,r.c.grupo||'',...PCOLS.map(p=>pCell(p[0],r.e))].join('\t'));return [head,...body,['Total geral','',...PCOLS.map(p=>pCell(p[0],T))].join('\t')].join('\n');};
+}
+function wirePP(){
+  const items=[['split.ber','Berçário · % da creche'],['split.m1','Maternal I · % da creche'],['split.m2','Maternal II · % da creche'],['split.p1','Pré I · % da pré-escola'],['split.p2','Pré II · % da pré-escola'],
+   ['razao.ber','Berçário · alunos por professor'],['razao.m1','Maternal I · alunos por professor'],['razao.m2','Maternal II · alunos por professor'],['razao.p1','Pré I · alunos por professor'],['razao.p2','Pré II · alunos por professor'],
+   ['aee.base','AEE base · alunos por professor'],['aee.min','AEE mínimo · alunos por professor'],['aee.max','AEE máximo · alunos por professor']];
+  const get=k=>{const [a,b]=k.split('.');return S.pp[a][b];};
+  $('#pPrem').innerHTML=items.map(([k,l])=>`<label class="f">${l}<input type="number" min="0" step="1" data-k="${k}" value="${get(k)}"></label>`).join('');
+  const warn=()=>{const c=S.pp.split.ber+S.pp.split.m1+S.pp.split.m2,p=S.pp.split.p1+S.pp.split.p2;$('#pWarn').textContent=(c!==100||p!==100)?`Atenção: a creche soma ${c}% e a pré-escola ${p}% (devem somar 100%).`:'';};
+  document.querySelectorAll('#pPrem input').forEach(el=>el.oninput=()=>{const [a,b]=el.dataset.k.split('.');S.pp[a][b]=+el.value||0;save();warn();renderProf();});
+  $('#pReset').onclick=()=>{S.pp=JSON.parse(JSON.stringify(DEF_PP));save();wirePP();renderProf();};
+  warn();}
+function wireProf(){wirePP();
+  $('#allBtn2').onclick=()=>{S.sel=new Set(S.cities.map(slug));save();renderPainel();renderProf();};
+  $('#noneBtn2').onclick=()=>{S.sel=new Set();save();renderPainel();renderProf();};
+  $('#pCopy').onclick=async()=>{try{await navigator.clipboard.writeText(window._ptsv());$('#pCopyMsg').textContent='Tabela copiada.';}catch(e){$('#pCopyMsg').textContent='Não foi possível copiar automaticamente.';}};}
+
+/* ===================== INIT ===================== */
+buildTabs();wireDados();renderBase();wireSim();renderContratacao();wireProf();
+$('#espSum').checked=S.somaEsp;$('#espSum').onchange=e=>{S.somaEsp=e.target.checked;save();refreshAll();};
+$('#allBtn').onclick=()=>{S.sel=new Set(S.cities.map(slug));save();renderPainel();};
+$('#noneBtn').onclick=()=>{S.sel=new Set();save();renderPainel();};
+['stackMode','rankMetric','lineMode'].forEach(id=>$('#'+id).onchange=renderPainel);
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if($('#t-painel').classList.contains('on'))renderPainel();if($('#t-professores').classList.contains('on'))renderProf();if($('#t-simulador').classList.contains('on'))updateSim();},120);});
+showTab(location.hash.slice(1)||'painel');
+</script>
+</body>
+</html>
